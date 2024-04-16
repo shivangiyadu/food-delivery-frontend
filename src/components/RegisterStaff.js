@@ -1,6 +1,7 @@
-/*
-import React, { useState } from 'react';
+
+/*import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export const RegisterStaff = () => {
     const [formValues, setFormValues] = useState({
@@ -17,28 +18,32 @@ export const RegisterStaff = () => {
         navigate('/place-order');
     };
 
-    const handleViewDetails = async() => {
-        try {
-            const response = await axios.get("http://localhost:4000/api/v1/staff/details");
-            setViewDetails(response.data);
-        } catch (error) {
-            console.log("Error fetching staff details:", error);
-        }
-    };
-    };
+   const handleViewDetails = async (id) => {
+    try {
+        const response = await axios.get(http://localhost:4000/api/v1/staff/${id});
+        setViewDetails(response.data);
+        console.log("Response data:", response.data);
+    } catch (error) {
+        console.log("Error fetching staff details:", error);
+    }
+};
 
-    const handleEdit = () => {
+
+
+    const handleEdit = async(id) => {
         try {
-            const response = await axios.put("http://localhost:4000/api/v1/staff/edit", formValues);
+            const response = await axios.get(`http://localhost:4000/api/v1/staff/${id}`, {
+                params: formValues // Pass formValues as query parameters if needed
+            });
             console.log("Staff details updated:", response.data);
         } catch (error) {
             console.log("Error updating staff details:", error);
         }
-    };
+        
        
-        console.log("Edit button clicked");
-    };
-        const handleDelete = () => {
+        const handleDelete = async() => {
+            try {
+                await axios.delete("http://localhost:4000/api/v1/deleteStaff");
             setViewDetails(false);
             setFormValues({
                 FirstName: "",
@@ -47,6 +52,11 @@ export const RegisterStaff = () => {
                 workingHOurs: "",
                 checkBox: "false"
             });
+        }
+        catch(error){
+            console.log("Error deleting staff details",error)
+
+        }
     };
 
     return (
@@ -102,8 +112,9 @@ export const RegisterStaff = () => {
             )}
             <button onClick={handlePlaceHolder}>PLACE YOUR ORDER</button>
         </div>
-    );
-};
+    )
+}
+}
 */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -118,26 +129,25 @@ export const RegisterStaff = () => {
         checkBox: false
     });
     const [viewDetails, setViewDetails] = useState(null);
-    const [staffId, setStaffId] = useState(null); // Add state for staff ID
     const navigate = useNavigate();
 
     const handlePlaceHolder = () => {
         navigate('/place-order');
     };
 
-    const handleViewDetails = async () => {
+    const handleViewDetails = async (id) => {
         try {
-            const response = await axios.get("http://localhost:4000/api/v1/staff/details");
+            const response = await axios.get(`http://localhost:4000/api/v1/staff/${id}`);
             setViewDetails(response.data);
-            setStaffId(response.data._id); // Set staffId when fetching details
+            console.log("Response data:", response.data);
         } catch (error) {
             console.log("Error fetching staff details:", error);
         }
     };
 
-    const handleEdit = async () => {
+    const handleEdit = async (id) => {
         try {
-            const response = await axios.put(`http://localhost:4000/api/v1/update/staff/${staffId}`, formValues); // Use /update/staff/:id route
+            const response = await axios.put(`http://localhost:4000/api/v1/staff/${id}`, formValues);
             console.log("Staff details updated:", response.data);
         } catch (error) {
             console.log("Error updating staff details:", error);
@@ -146,7 +156,7 @@ export const RegisterStaff = () => {
 
     const handleDelete = async () => {
         try {
-            await axios.delete(`http://localhost:4000/api/v1/deleteStaff/${staffId}`); // Use /deleteStaff/:id route
+            await axios.delete("http://localhost:4000/api/v1/deleteStaff");
             setViewDetails(false);
             setFormValues({
                 FirstName: "",
@@ -155,8 +165,8 @@ export const RegisterStaff = () => {
                 workingHours: "",
                 checkBox: false
             });
-        } catch (err) {
-            console.log("Error deleting staff details", err);
+        } catch(error){
+            console.log("Error deleting staff details", error);
         }
     };
 
@@ -169,20 +179,52 @@ export const RegisterStaff = () => {
             flexDirection: "column"
         }}>
             <h1>ADD THE DETAILS OF THE STAFF</h1>
-            {/* Input fields for FirstName, LastName, location, workingHours, and checkbox */}
-            <button onClick={handleViewDetails}>VIEW YOUR DETAILS</button>
+            <input
+                value={formValues.FirstName}
+                onChange={(e) => setFormValues({ ...formValues, FirstName: e.target.value })}
+                type="text"
+                placeholder='FirstName'
+            />
+            <br />
+            <input
+                value={formValues.LastName}
+                onChange={(e) => setFormValues({ ...formValues, LastName: e.target.value })}
+                type="text"
+                placeholder='LastName'
+            />
+            <br />
+            <input
+                value={formValues.location}
+                onChange={(e) => setFormValues({ ...formValues, location: e.target.value })}
+                type="text"
+                placeholder='Location'
+            />
+            <br />
+            <input
+                value={formValues.workingHours}
+                onChange={(e) => setFormValues({ ...formValues, workingHours: e.target.value })}
+                type="text"
+                placeholder='Working hours'
+            />
+            <br />
+            <label htmlFor="checkbox">Availability</label>
+            <input
+                type="checkbox"
+                checked={formValues.checkBox}
+                onChange={(e) => setFormValues({ ...formValues, checkBox: e.target.checked })}
+                name="checkbox"
+            />
+            <button onClick={() => handleViewDetails(viewDetails._id)}>VIEW YOUR DETAILS</button>
             {viewDetails && (
                 <div>
-                    
                     <h2>Your Details:</h2>
                     <p>FirstName: {viewDetails.FirstName}</p>
                     <p>LastName: {viewDetails.LastName}</p>
                     <p>Location: {viewDetails.location}</p>
                     <p>Working Hours: {viewDetails.workingHours}</p>
-                    <button onClick={handleEdit}>Edit</button>
+                    <button onClick={() => handleEdit(viewDetails._id)}>Edit</button>
                     <button onClick={handleDelete}>Delete</button>
                 </div>
-                  
             )}
             <button onClick={handlePlaceHolder}>PLACE YOUR ORDER</button>
         </div>
